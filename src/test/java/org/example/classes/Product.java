@@ -1,5 +1,8 @@
 package org.example.classes;
 
+import org.example.generator.Generatable;
+
+@Generatable
 public class Product {
     private String name;
     private double price;
@@ -44,5 +47,4 @@ public class Product {
     public String toString() {
         return super.toString();
     }
-
 }

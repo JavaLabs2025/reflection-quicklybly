@@ -1,14 +1,14 @@
 package org.example.classes;
 
-public class Example {
+public class NonGeneratable {
     int i;
 
-    public Example(int i) {
+    public NonGeneratable(int i) {
         this.i = i;
     }
 
     @Override
     public String toString() {
-        return "Example(" + i + ")";
+        return "NonGeneratable(" + i + ")";
     }
 }
