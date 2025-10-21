@@ -7,10 +7,14 @@ import java.util.Random;
 import org.example.classes.Example;
 import org.example.classes.NonGeneratable;
 import org.example.classes.Product;
+import org.example.classes.Rectangle;
+import org.example.classes.Triangle;
 import org.example.generator.type.TypeGeneratorsProvider;
 import org.example.generator.type.impl.PrimitiveGeneratorsProvider;
 import org.example.generator.type.impl.StringGeneratorsProvider;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -50,16 +54,20 @@ class GeneratorTest {
         assertThat(ex.getMessage()).isEqualTo("Class is not annotated with @Generatable");
     }
 
-    @Test
-    void shouldGenerateExampleClass() {
-        var example = generate(Example.class);
-        assertThat(example).isInstanceOf(Example.class);
+    @ParameterizedTest
+    @MethodSource("source")
+    void shouldGenerateSupportedClasses(Class<?> clazz) {
+        var instance = generate(clazz);
+        assertThat(instance).isInstanceOf(clazz);
     }
 
-    @Test
-    void shouldGenerateProductClass() {
-        var product = generate(Product.class);
-        assertThat(product).isInstanceOf(Product.class);
+    static List<Class<?>> source() {
+        return List.of(
+                Example.class,
+                Product.class,
+                Rectangle.class,
+                Triangle.class
+        );
     }
 
     private Object generate(Class<?> clazz) {
