@@ -109,6 +109,29 @@ class GeneratorTest {
         );
     }
 
+    @Test
+    void shouldGenerateArray() {
+        Class<?> intArrayClass = int[].class;
+        assertThat(generate(intArrayClass)).isInstanceOf(intArrayClass);
+    }
+
+    @Test
+    void shouldGenerate2DArray() {
+        Class<?> intArrayClass = int[][].class;
+        assertThat(generate(intArrayClass)).isInstanceOf(intArrayClass);
+    }
+
+    @Test
+    void shouldThrowIfMaxDepthReached() {
+        TypeGeneratorsProvider provider = () -> Map.of(String.class, () -> "test-string");
+        var generator = new Generator(List.of(provider), 1);
+        var ex = assertThrows(
+                GenerationException.class,
+                () -> generator.generateValueOfType(String[][].class)
+        );
+        assertThat(ex.getMessage()).isEqualTo("maxDepth exceeded");
+    }
+
     @ParameterizedTest
     @MethodSource("source")
     void shouldGenerateSupportedClasses(Class<?> clazz) {

@@ -1,5 +1,6 @@
 package org.example.generator;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
@@ -75,6 +76,10 @@ public class Generator {
             return generateEnum(clazz);
         }
 
+        if (clazz.isArray()) {
+            return generateArray(clazz, depth);
+        }
+
         Constructor<?>[] constructors = clazz.getDeclaredConstructors();
         for (int i = 0; i < constructors.length; i++) {
             Constructor<?> constructor = constructors[i];
@@ -91,8 +96,32 @@ public class Generator {
     }
 
     private boolean canBeGenerated(Class<?> clazz) {
-        return generators.containsKey(clazz) || clazz.isEnum() ||
+        return generators.containsKey(clazz) ||
+                clazz.isEnum() ||
+                clazz.isArray() ||
                 clazz.isAnnotationPresent(Generatable.class);
+    }
+
+    // todo вынести длину в параметр
+    private Object generateArray(
+            Class<?> arrayClass,
+            int depth
+    ) throws GenerationException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        Class<?> arrayElementClass = arrayClass.getComponentType();
+
+        if (arrayElementClass == null) {
+            throw new IllegalStateException("generateArray received not array as a parameter");
+        }
+
+        int length = random.nextInt(10);
+        Object result = Array.newInstance(arrayElementClass, length);
+
+        for (int i = 0; i < length; ++i) {
+            Object element = generateValueOfType(arrayElementClass, depth + 1);
+            Array.set(result, i, element);
+        }
+
+        return result;
     }
 
     private Object generateEnum(Class<?> enumClass) throws GenerationException {
