@@ -60,9 +60,9 @@ public class Generator {
             );
         }
 
-        // todo replace with null!
+        // todo primitives cannot be null
         if (depth > maxDepth) {
-            throw new GenerationException("maxDepth exceeded");
+            return null;
         }
 
         if (generators.containsKey(clazz)) {
@@ -120,7 +120,7 @@ public class Generator {
             throw new IllegalStateException("generateArray received not array as a parameter");
         }
 
-        int length = random.nextInt(10);
+        int length = random.nextInt(1, 10);
         Object result = Array.newInstance(arrayElementClass, length);
 
         for (int i = 0; i < length; ++i) {

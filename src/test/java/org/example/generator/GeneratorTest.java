@@ -107,14 +107,15 @@ class GeneratorTest {
     }
 
     @Test
-    void shouldThrowIfMaxDepthReached() {
+    void shouldPlaceNullIfMaxDepthReached() {
         TypeGeneratorsProvider provider = () -> Map.of(String.class, () -> "test-string");
         var generator = new Generator(List.of(provider), 1);
-        var ex = assertThrows(
-                GenerationException.class,
-                () -> generator.generateValueOfType(String[][].class)
-        );
-        assertThat(ex.getMessage()).isEqualTo("maxDepth exceeded");
+        var result = generate(generator, String[][].class);
+
+        assertThat(result).isInstanceOf(String[][].class);
+
+        var resultTyped = (String[][]) result;
+        assertThat(resultTyped[0][0]).isNull();
     }
 
     @Test
