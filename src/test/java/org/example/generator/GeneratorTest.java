@@ -1,9 +1,6 @@
 package org.example.generator;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import org.example.classes.Example;
 import org.example.classes.NonGeneratable;
 import org.example.classes.Product;
@@ -130,6 +127,48 @@ class GeneratorTest {
                 () -> generator.generateValueOfType(String[][].class)
         );
         assertThat(ex.getMessage()).isEqualTo("maxDepth exceeded");
+    }
+
+    @Test
+    void shouldGenerateList() {
+        var result = generate(List.class);
+        assertThat(result).isInstanceOf(ArrayList.class);
+        assertThat(((List<?>) result).size()).isEqualTo(0);
+    }
+
+    @Test
+    void shouldGenerateSet() {
+        var result = generate(Set.class);
+        assertThat(result).isInstanceOf(HashSet.class);
+        assertThat(((Set<?>) result).size()).isEqualTo(0);
+    }
+
+    @Test
+    void shouldGenerateQueue() {
+        var result = generate(Queue.class);
+        assertThat(result).isInstanceOf(LinkedList.class);
+        assertThat(((Queue<?>) result).size()).isEqualTo(0);
+    }
+
+    @Test
+    void shouldGenerateCollection() {
+        var result = generate(Collection.class);
+        assertThat(result).isInstanceOf(ArrayList.class);
+        assertThat(((Collection<?>) result).size()).isEqualTo(0);
+    }
+
+    @Test
+    void shouldGenerateMap() {
+        var result = generate(Map.class);
+        assertThat(result).isInstanceOf(HashMap.class);
+        assertThat(((Map<?, ?>) result).size()).isEqualTo(0);
+    }
+
+    @Test
+    void shouldGenerateSortedMap() {
+        var result = generate(SortedMap.class);
+        assertThat(result).isInstanceOf(TreeMap.class);
+        assertThat(((Map<?, ?>) result).size()).isEqualTo(0);
     }
 
     @ParameterizedTest

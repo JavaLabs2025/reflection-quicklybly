@@ -3,10 +3,7 @@ package org.example.generator;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.function.Supplier;
 import org.example.generator.type.TypeGeneratorsProvider;
 
@@ -63,7 +60,7 @@ public class Generator {
             );
         }
 
-        // todo add tests
+        // todo replace with null!
         if (depth > maxDepth) {
             throw new GenerationException("maxDepth exceeded");
         }
@@ -78,6 +75,14 @@ public class Generator {
 
         if (clazz.isArray()) {
             return generateArray(clazz, depth);
+        }
+
+        if (Collection.class.isAssignableFrom(clazz)) {
+            return generateCollectionFromClass(clazz);
+        }
+
+        if (Map.class.isAssignableFrom(clazz)) {
+            return generateMapFromClass(clazz);
         }
 
         Constructor<?>[] constructors = clazz.getDeclaredConstructors();
@@ -99,6 +104,8 @@ public class Generator {
         return generators.containsKey(clazz) ||
                 clazz.isEnum() ||
                 clazz.isArray() ||
+                Collection.class.isAssignableFrom(clazz) ||
+                Map.class.isAssignableFrom(clazz) ||
                 clazz.isAnnotationPresent(Generatable.class);
     }
 
@@ -139,6 +146,23 @@ public class Generator {
         }
 
         return values[random.nextInt(values.length)];
+    }
+
+    private Collection<?> generateCollectionFromClass(Class<?> collectionClass) {
+        if (Set.class.isAssignableFrom(collectionClass)) {
+            return new HashSet<>();
+        }
+        if (Queue.class.isAssignableFrom(collectionClass)) {
+            return new LinkedList<>();
+        }
+        return new ArrayList<>();
+    }
+
+    private Map<?, ?> generateMapFromClass(Class<?> collectionClass) {
+        if (SortedMap.class.isAssignableFrom(collectionClass)) {
+            return new TreeMap<>();
+        }
+        return new HashMap<>();
     }
 
     private Object tryConstructor(
