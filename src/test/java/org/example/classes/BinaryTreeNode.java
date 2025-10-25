@@ -2,7 +2,6 @@ package org.example.classes;
 
 import org.example.generator.Generatable;
 
-// todo recursion
 @Generatable
 public class BinaryTreeNode {
     private Integer data;

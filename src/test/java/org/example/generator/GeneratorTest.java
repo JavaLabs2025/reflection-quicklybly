@@ -1,13 +1,7 @@
 package org.example.generator;
 
 import java.util.*;
-import org.example.classes.EmptyEnum;
-import org.example.classes.Example;
-import org.example.classes.NonGeneratable;
-import org.example.classes.Product;
-import org.example.classes.Rectangle;
-import org.example.classes.TestEnum;
-import org.example.classes.Triangle;
+import org.example.classes.*;
 import org.example.generator.type.TypeGeneratorsProvider;
 import org.example.generator.type.impl.PrimitiveGeneratorsProvider;
 import org.example.generator.type.impl.StringGeneratorsProvider;
@@ -27,7 +21,7 @@ class GeneratorTest {
             new StringGeneratorsProvider(random, 15)
     );
 
-    private final Generator generator = new Generator(providers, Integer.MAX_VALUE);
+    private final Generator generator = new Generator(providers, 10);
 
     @Test
     void shouldThrowOnDuplicateGenerator() {
@@ -89,8 +83,8 @@ class GeneratorTest {
                 GenerationException.class,
                 () -> generator.generateValueOfType(EmptyEnum.class)
         );
-        assertThat(ex.getMessage()).isEqualTo("enum '" + this.getClass().getName() + "$" +
-                EmptyEnum.class.getSimpleName() + "' cannot generated, because values is empty"
+        assertThat(ex.getMessage()).isEqualTo("enum '" + EmptyEnum.class.getName() +
+                "' cannot generated, because values is empty"
         );
     }
 
@@ -160,6 +154,31 @@ class GeneratorTest {
         assertThat(((Map<?, ?>) result).size()).isEqualTo(0);
     }
 
+    @Test
+    void shouldFillInternalCollection() {
+        var instance = generate(Cart.class);
+        assertThat(instance).isInstanceOf(Cart.class);
+
+        var cart = (Cart) instance;
+        var items = cart.getItems();
+        assertThat(items.size()).isNotEqualTo(0);
+        assertThat(items.getFirst()).isInstanceOf(Product.class);
+    }
+
+    @Test
+    void shouldFillInternalMap() {
+        var instance = generate(InternalMapTest.class);
+        assertThat(instance).isInstanceOf(InternalMapTest.class);
+
+        var cart = (InternalMapTest) instance;
+        var items = cart.getItems();
+        assertThat(items.size()).isNotEqualTo(0);
+
+        Map.Entry<?, ?> item = items.entrySet().iterator().next();
+        assertThat(item.getKey()).isInstanceOf(Product.class);
+        assertThat(item.getValue()).isInstanceOf(String.class);
+    }
+
     @ParameterizedTest
     @MethodSource("source")
     void shouldGenerateSupportedClasses(Class<?> clazz) {
@@ -171,6 +190,8 @@ class GeneratorTest {
         return List.of(
                 Example.class,
                 Product.class,
+                Cart.class,
+                BinaryTreeNode.class,
                 Rectangle.class,
                 Triangle.class
         );
