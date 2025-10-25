@@ -1,10 +1,12 @@
 package org.example.generator;
 
 import java.util.*;
+import org.example.classes.EmptyEnum;
 import org.example.classes.Example;
 import org.example.classes.NonGeneratable;
 import org.example.classes.Product;
 import org.example.classes.Rectangle;
+import org.example.classes.TestEnum;
 import org.example.classes.Triangle;
 import org.example.generator.type.TypeGeneratorsProvider;
 import org.example.generator.type.impl.PrimitiveGeneratorsProvider;
@@ -26,20 +28,6 @@ class GeneratorTest {
     );
 
     private final Generator generator = new Generator(providers, Integer.MAX_VALUE);
-
-    private enum TestEnum {
-        ONE("one"),
-        TWO("two"),
-        ;
-
-        final String name;
-
-        TestEnum(String name) {
-            this.name = name;
-        }
-    }
-
-    private enum EmptyEnum {}
 
     @Test
     void shouldThrowOnDuplicateGenerator() {
