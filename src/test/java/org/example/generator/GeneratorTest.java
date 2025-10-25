@@ -20,8 +20,9 @@ class GeneratorTest {
             new PrimitiveGeneratorsProvider(random),
             new StringGeneratorsProvider(random, 15)
     );
+    private final Object marker = TestEnum.ONE;
 
-    private final Generator generator = new Generator(providers, 10);
+    private final Generator generator = new Generator(providers, 10, marker);
 
     @Test
     void shouldThrowOnDuplicateGenerator() {
@@ -32,7 +33,7 @@ class GeneratorTest {
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> new Generator(duplicateProviders, 1)
+                () -> new Generator(duplicateProviders, 1, marker)
         );
 
         assertThat(exception.getMessage())
@@ -44,7 +45,7 @@ class GeneratorTest {
     void shouldThrowOnNegativeOrZeroMaxDepth(int maxDepth) {
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> new Generator(List.of(), maxDepth)
+                () -> new Generator(List.of(), maxDepth, marker)
         );
 
         assertThat(exception.getMessage())
@@ -65,14 +66,14 @@ class GeneratorTest {
     @Test
     void shouldGenerateSimpleClassesFromGenerators() {
         TypeGeneratorsProvider provider = () -> Map.of(String.class, () -> "test-string");
-        Generator generator = new Generator(List.of(provider), 1);
+        Generator generator = new Generator(List.of(provider), 1, marker);
 
         assertThat(generate(generator, String.class)).isEqualTo("test-string");
     }
 
     @Test
     void shouldGenerateEnum() {
-        Generator generator = new Generator(List.of(), 1);
+        Generator generator = new Generator(List.of(), 1, marker);
 
         assertThat(generate(generator, TestEnum.class)).isInstanceOf(TestEnum.class);
     }
@@ -103,7 +104,7 @@ class GeneratorTest {
     @Test
     void shouldPlaceNullIfMaxDepthReached() {
         TypeGeneratorsProvider provider = () -> Map.of(String.class, () -> "test-string");
-        var generator = new Generator(List.of(provider), 1);
+        var generator = new Generator(List.of(provider), 1, marker);
         var result = generate(generator, String[][].class);
 
         assertThat(result).isInstanceOf(String[][].class);

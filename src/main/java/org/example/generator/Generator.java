@@ -16,10 +16,15 @@ public class Generator {
     private final Map<Class<?>, Supplier<?>> generators;
 
     private final int maxDepth;
+    private final String packageToScan;
 
     private final Random random = new Random();
 
-    public Generator(Collection<TypeGeneratorsProvider> providers, int maxDepth) {
+    public Generator(
+            Collection<TypeGeneratorsProvider> providers,
+            int maxDepth,
+            Object packageMarker
+    ) {
         Map<Class<?>, Supplier<?>> result = new HashMap<>();
 
         for (TypeGeneratorsProvider provider : providers) {
@@ -45,6 +50,8 @@ public class Generator {
             throw new IllegalArgumentException("maxDepth expected to be more than 0, but got " + maxDepth);
         }
         this.maxDepth = maxDepth;
+
+        this.packageToScan = packageMarker.getClass().getPackageName();
     }
 
     public Object generateValueOfType(
