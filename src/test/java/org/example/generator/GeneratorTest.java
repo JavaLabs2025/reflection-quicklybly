@@ -180,6 +180,16 @@ class GeneratorTest {
         assertThat(item.getValue()).isInstanceOf(String.class);
     }
 
+    @Test
+    void shouldThrowOnInterfaceWithNotImpl() {
+        var clazz = InterfaceWithNoImpl.class;
+        var ex = assertThrows(
+                GenerationException.class,
+                () -> generator.generateValueOfType(clazz)
+        );
+        assertThat(ex.getMessage()).isEqualTo("No implementation found for interface " + clazz.getName());
+    }
+
     @ParameterizedTest
     @MethodSource("source")
     void shouldGenerateSupportedClasses(Class<?> clazz) {
@@ -194,7 +204,8 @@ class GeneratorTest {
                 Cart.class,
                 BinaryTreeNode.class,
                 Rectangle.class,
-                Triangle.class
+                Triangle.class,
+                Shape.class
         );
     }
 

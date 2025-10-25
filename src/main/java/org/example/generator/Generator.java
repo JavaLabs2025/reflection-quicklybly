@@ -1,5 +1,6 @@
 package org.example.generator;
 
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -7,6 +8,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.function.Supplier;
 import org.example.generator.type.TypeGeneratorsProvider;
@@ -17,6 +19,7 @@ public class Generator {
 
     private final int maxDepth;
     private final String packageToScan;
+    private final Set<Class<?>> classesInPackageToScan;
 
     private final Random random = new Random();
 
@@ -52,6 +55,15 @@ public class Generator {
         this.maxDepth = maxDepth;
 
         this.packageToScan = packageMarker.getClass().getPackageName();
+        // todo add test
+        try {
+            this.classesInPackageToScan = PackageUtils.getClassesInPackage(
+                    packageToScan,
+                    Thread.currentThread().getContextClassLoader()
+            );
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public Object generateValueOfType(
@@ -96,19 +108,14 @@ public class Generator {
             return generateMapFromClass(clazz);
         }
 
-        Constructor<?>[] constructors = clazz.getDeclaredConstructors();
-        for (int i = 0; i < constructors.length; i++) {
-            Constructor<?> constructor = constructors[i];
-            try {
-                return tryConstructor(constructor, depth);
-            } catch (Exception e) {
-                if (i == constructors.length - 1) {
-                    throw e;
-                }
-            }
+        if (clazz.isInterface()) {
+            Class<?> implementationClass = findImplementationClass(clazz).orElseThrow(
+                    () -> new GenerationException("No implementation found for interface " + clazz.getName())
+            );
+            return generateValueOfType(implementationClass, depth); // not incrementing depth on purpose
         }
 
-        throw new GenerationException("No suitable constructor found for class: " + clazz.getName());
+        return generateCommonClass(clazz, depth);
     }
 
     private boolean canBeGenerated(Class<?> clazz) {
@@ -172,6 +179,42 @@ public class Generator {
             return new TreeMap<>();
         }
         return new HashMap<>();
+    }
+
+    private Optional<Class<?>> findImplementationClass(Class<?> interfaceClass) {
+        if (!interfaceClass.getPackageName().startsWith(packageToScan)) {
+            return Optional.empty();
+        }
+
+        List<Class<?>> implementations = classesInPackageToScan.stream().filter(c ->
+                interfaceClass.isAssignableFrom(c) &&
+                        c.isAnnotationPresent(Generatable.class) &&
+                        !c.isInterface() &&
+                        !Modifier.isAbstract(c.getModifiers())
+        ).toList();
+        if (implementations.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(implementations.get(random.nextInt(implementations.size())));
+    }
+
+    private Object generateCommonClass(
+            Class<?> clazz,
+            int depth
+    ) throws GenerationException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        Constructor<?>[] constructors = clazz.getDeclaredConstructors();
+        for (int i = 0; i < constructors.length; i++) {
+            Constructor<?> constructor = constructors[i];
+            try {
+                return tryConstructor(constructor, depth);
+            } catch (Exception e) {
+                if (i == constructors.length - 1) {
+                    throw e;
+                }
+            }
+        }
+
+        throw new GenerationException("No suitable constructor found for class: " + clazz.getName());
     }
 
     private Object tryConstructor(
